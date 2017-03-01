@@ -1,10 +1,5 @@
 #**Behavioral Cloning** 
 
-##Writeup Template
-
-###You can use this file as a template for your writeup if you want to submit it as a markdown file, but feel free to use some other method and submit a pdf if you prefer.
-
----
 
 **Behavioral Cloning Project**
 
@@ -18,7 +13,7 @@ The goals / steps of this project are the following:
 
 [//]: # (Image References)
 
-[image1]: ./examples/placeholder.png "Model Visualization"
+[image1]: ./Nvidia-architecture.png "Model Visualization"
 [image2]: ./examples/placeholder.png "Grayscaling"
 [image3]: ./examples/placeholder_small.png "Recovery Image"
 [image4]: ./examples/placeholder_small.png "Recovery Image"
@@ -38,7 +33,7 @@ My project includes the following files:
 * model.py containing the script to create and train the model
 * drive.py for driving the car in autonomous mode
 * model.h5 containing a trained convolution neural network 
-* writeup_report.md or writeup_report.pdf summarizing the results
+* writeup_report.md summarizing the results
 
 ####2. Submission includes functional code
 Using the Udacity provided simulator and my drive.py file, the car can be driven autonomously around the track by executing 
@@ -54,76 +49,54 @@ The model.py file contains the code for training and saving the convolution neur
 
 ####1. An appropriate model architecture has been employed
 
-My model consists of a convolution neural network with 3x3 filter sizes and depths between 32 and 128 (model.py lines 18-24) 
+The model I used was the nvidia model as suggested in the lectures. The only difference was the input image used was 160x320x3 instead of the 66x200x3 in the nvidia model.
 
-The model includes RELU layers to introduce nonlinearity (code line 20), and the data is normalized in the model using a Keras lambda layer (code line 18). 
+The first layer of the model has a lambda layer which normalizes the input. Followed by that, the image is cropped to ignore the hood of the car as well as the eliminate some of the sky, trees etc (using a Cropping layer to eliminate areas that may not be of significance in training the model).The rest of the model follows the nvidia model.
 
 ####2. Attempts to reduce overfitting in the model
 
-The model contains dropout layers in order to reduce overfitting (model.py lines 21). 
-
-The model was trained and validated on different data sets to ensure that the model was not overfitting (code line 10-16). The model was tested by running it through the simulator and ensuring that the vehicle could stay on the track.
+The model contains dropout layers in order to reduce overfitting. 
+The data was split 80/20 (training/validation) to avoid overfitting. For testing, the model was tested on the simulator in autonomous mode and was observed to stay on track through the entire course.ehicle could stay on the track.
 
 ####3. Model parameter tuning
 
-The model used an adam optimizer, so the learning rate was not tuned manually (model.py line 25).
+The model was tuned using a mean squared loss method and the adam optimizer.
 
 ####4. Appropriate training data
 
-Training data was chosen to keep the vehicle driving on the road. I used a combination of center lane driving, recovering from the left and right sides of the road ... 
+After following much of the discussion on the slack channels I decided to go with the test data that came with the project as a lot of people had success with it. Considering a lot of the students had trouble generating their own usable data it seemed prudent to go with the test data and avoid introducing another point of failure.
 
-For details about how I created the training data, see the next section. 
+During development and training of the model I tried using some user generated data which actually performed flawlessly on the "Jungle track". It however was not as accurate on the primary track and I decided to go with the test set. 
 
 ###Model Architecture and Training Strategy
 
 ####1. Solution Design Approach
 
-The overall strategy for deriving a model architecture was to ...
+The initial approach to the problem was to implement the recently tested and proven Nvidia end to end deep learning model for sel-driving cars. This took out a lot of guesswork from the equation allowing me to spend more time in other areas of the project. The model seemed to work quite well beginning with the test runs so I decided to just add on top of it the lambda layer and cropping layer (both ideas that were explained in the course lectures)
 
-My first step was to use a convolution neural network model similar to the ... I thought this model might be appropriate because ...
+In order to gauge how well the model was working, I split my image and steering angle data into a training and validation set. (80 % - Training and 20% - Validation). 
 
-In order to gauge how well the model was working, I split my image and steering angle data into a training and validation set. I found that my first model had a low mean squared error on the training set but a high mean squared error on the validation set. This implied that the model was overfitting. 
+To avoid overfitting, 2 dropout layers of 50% were added.
+As explained in this paper, http://papers.nips.cc/paper/4878-understanding-dropout.pdf that seemed adequate to ensure we did not overfit the model
 
-To combat the overfitting, I modified the model so that ...
-
-Then I ... 
-
-The final step was to run the simulator to see how well the car was driving around track one. There were a few spots where the vehicle fell off the track... to improve the driving behavior in these cases, I ....
+The final step was to run the simulator to see how well the car was driving around track one. The car seemed to drive almost flawlessly through the track except for the are right after the bridge which does not have a clearly marked right hand side barrier. My initial thought was this was because of the training data bias. After trying out a few different sample data sets the problem persisted. There was marginal difference with increasing the data size or modifying parameters within the model and even increasing the number of epochs.
+In the end, applying a gamma transformation inspired by this article
+http://www.pyimagesearch.com/2015/10/05/opencv-gamma-correction/ made navigating the "problem" portion of the track possible.
 
 At the end of the process, the vehicle is able to drive autonomously around the track without leaving the road.
 
 ####2. Final Model Architecture
 
-The final model architecture (model.py lines 18-24) consisted of a convolution neural network with the following layers and layer sizes ...
-
-Here is a visualization of the architecture (note: visualizing the architecture is optional according to the project rubric)
-
-![alt text][image1]
+As explained aboce, the final model architecture was a slightly modified Nvidia architechture with a larger input frame of 160x320x3 followed by a lambda layer and a cropping layer. 
 
 ####3. Creation of the Training Set & Training Process
 
-To capture good driving behavior, I first recorded two laps on track one using center lane driving. Here is an example image of center lane driving:
+There were 2 possible approches to the training data. Either use the simulator to drive around the track and obtain training data or use the test set provided. With other students having mixed success with their own training data, I decided to go with the Udacity test set.
+The training data was pre processed and converted to YUV space as that worked the best with the Nvidia model (as described in the above referenced paper) To rule out any (left-turn)bias on the test set, the data was augmented from all 3 camera images by adding mirror images to the test set. This brought the total number of training images to 7 times the initial set (~45k samples) and with plenty of data to train the model on.
 
-![alt text][image2]
+Although even with a small dataset using only the center camera image in the YUV space was fairly successful, there was one location in the course, where the car consistently went off track. Ultimately, the fix for that was to apply gamma transformation to the images. 
+What was interesting to note, is applying that transformation made the model drive very poorly on the 2nd "Jungle Track" while improving driving behavior on the main track. Since that was not crucial to completion of this project I did not spend a lot of time analyzing this but it is definitely of interest to understand this better.
 
-I then recorded the vehicle recovering from the left side and right sides of the road back to center so that the vehicle would learn to .... These images show what a recovery looks like starting from ... :
+I finally randomly shuffled the data set and put 20% of the data into a validation set. 
 
-![alt text][image3]
-![alt text][image4]
-![alt text][image5]
-
-Then I repeated this process on track two in order to get more data points.
-
-To augment the data sat, I also flipped images and angles thinking that this would ... For example, here is an image that has then been flipped:
-
-![alt text][image6]
-![alt text][image7]
-
-Etc ....
-
-After the collection process, I had X number of data points. I then preprocessed this data by ...
-
-
-I finally randomly shuffled the data set and put Y% of the data into a validation set. 
-
-I used this training data for training the model. The validation set helped determine if the model was over or under fitting. The ideal number of epochs was Z as evidenced by ... I used an adam optimizer so that manually training the learning rate wasn't necessary.
+I used this training data for training the model. The validation set helped determine if the model was over or under fitting. After testing out epochs in the range of 5-20, a total number of epochs = 15 seemed optimal. I used an adam optimizer so that manually training the learning rate wasn't necessary.
