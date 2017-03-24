@@ -1,4 +1,4 @@
-#**Behavioral Cloning** 
+# **Behavioral Cloning** 
 
 
 **Behavioral Cloning Project**
@@ -25,9 +25,9 @@ The goals / steps of this project are the following:
 ###Here I will consider the [rubric points](https://review.udacity.com/#!/rubrics/432/view) individually and describe how I addressed each point in my implementation.  
 
 ---
-###Files Submitted & Code Quality
+### Files Submitted & Code Quality
 
-####1. Submission includes all required files and can be used to run the simulator in autonomous mode
+#### 1. Submission includes all required files and can be used to run the simulator in autonomous mode
 
 My project includes the following files:
 * model.py containing the script to create and train the model
@@ -35,42 +35,42 @@ My project includes the following files:
 * model.h5 containing a trained convolution neural network 
 * writeup_report.md summarizing the results
 
-####2. Submission includes functional code
+#### 2. Submission includes functional code
 Using the Udacity provided simulator and my drive.py file, the car can be driven autonomously around the track by executing 
 ```sh
 python drive.py model.h5
 ```
 
-####3. Submission code is usable and readable
+#### 3. Submission code is usable and readable
 
 The model.py file contains the code for training and saving the convolution neural network. The file shows the pipeline I used for training and validating the model, and it contains comments to explain how the code works.
 
-###Model Architecture and Training Strategy
+### Model Architecture and Training Strategy
 
-####1. An appropriate model architecture has been employed
+#### 1. An appropriate model architecture has been employed
 
 The model I used was the nvidia model as suggested in the lectures. The only difference was the input image used was 160x320x3 instead of the 66x200x3 in the nvidia model.
 
 The first layer of the model has a lambda layer which normalizes the input. Followed by that, the image is cropped to ignore the hood of the car as well as the eliminate some of the sky, trees etc (using a Cropping layer to eliminate areas that may not be of significance in training the model).The rest of the model follows the nvidia model.
 
-####2. Attempts to reduce overfitting in the model
+#### 2. Attempts to reduce overfitting in the model
 
 The model contains dropout layers in order to reduce overfitting. 
 The data was split 80/20 (training/validation) to avoid overfitting. For testing, the model was tested on the simulator in autonomous mode and was observed to stay on track through the entire course.ehicle could stay on the track.
 
-####3. Model parameter tuning
+#### 3. Model parameter tuning
 
 The model was tuned using a mean squared loss method and the adam optimizer.
 
-####4. Appropriate training data
+#### 4. Appropriate training data
 
 After following much of the discussion on the slack channels I decided to go with the test data that came with the project as a lot of people had success with it. Considering a lot of the students had trouble generating their own usable data it seemed prudent to go with the test data and avoid introducing another point of failure.
 
 During development and training of the model I tried using some user generated data which actually performed flawlessly on the "Jungle track". It however was not as accurate on the primary track and I decided to go with the test set. 
 
-###Model Architecture and Training Strategy
+### Model Architecture and Training Strategy
 
-####1. Solution Design Approach
+#### 1. Solution Design Approach
 
 The initial approach to the problem was to implement the recently tested and proven Nvidia end to end deep learning model for sel-driving cars. This took out a lot of guesswork from the equation allowing me to spend more time in other areas of the project. The model seemed to work quite well beginning with the test runs so I decided to just add on top of it the lambda layer and cropping layer (both ideas that were explained in the course lectures)
 
@@ -85,11 +85,11 @@ http://www.pyimagesearch.com/2015/10/05/opencv-gamma-correction/ made navigating
 
 At the end of the process, the vehicle is able to drive autonomously around the track without leaving the road.
 
-####2. Final Model Architecture
+#### 2. Final Model Architecture
 
 As explained aboce, the final model architecture was a slightly modified Nvidia architechture with a larger input frame of 160x320x3 followed by a lambda layer and a cropping layer. 
 
-####3. Creation of the Training Set & Training Process
+#### 3. Creation of the Training Set & Training Process
 
 There were 2 possible approches to the training data. Either use the simulator to drive around the track and obtain training data or use the test set provided. With other students having mixed success with their own training data, I decided to go with the Udacity test set.
 The training data was pre processed and converted to YUV space as that worked the best with the Nvidia model (as described in the above referenced paper) To rule out any (left-turn)bias on the test set, the data was augmented from all 3 camera images by adding mirror images to the test set. This brought the total number of training images to 7 times the initial set (~45k samples) and with plenty of data to train the model on.
